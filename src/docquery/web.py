@@ -1,4 +1,5 @@
 import os
+import platform
 from io import BytesIO
 from pathlib import Path
 
@@ -40,7 +41,7 @@ class WebDriver:
         options = Options()
         options.headless = True
         options.add_argument("--window-size=1920,1200")
-        if os.geteuid() == 0:
+        if is_admin():
             options.add_argument("--no-sandbox")
 
         self.driver = webdriver.Chrome(
@@ -127,3 +128,16 @@ def get_webdriver():
     if WEB_DRIVER is None:
         WEB_DRIVER = WebDriver()
     return WEB_DRIVER
+
+
+def is_admin():
+    """Check if script is running with admin/root privileges"""
+    try:
+        if platform.system() == "Windows":
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        else:
+            # Unix/Linux/macOS
+            return os.geteuid() == 0
+    except:
+        return False
